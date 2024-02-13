@@ -2,34 +2,42 @@ package notebook.view;
 
 import notebook.controller.UserController;
 import notebook.model.User;
+import notebook.model.repository.impl.UserRepository;
 import notebook.util.Commands;
+import notebook.util.DataEntry;
 
-import java.util.Scanner;
+
 
 public class UserView {
     private final UserController userController;
+    private final DataEntry input;
 
     public UserView(UserController userController) {
         this.userController = userController;
+        this.input = new DataEntry();
     }
 
-    public void run(){
+    public void run() {
         Commands com;
 
         while (true) {
-            String command = prompt("Введите команду: ");
-            com = Commands.valueOf(command);
-            if (com == Commands.EXIT) return;
+            String command = input.prompt("Введите команду: ");
+            com = Commands.valueOf(command.toUpperCase());
+            if (com == Commands.EXIT)
+                return;
             switch (com) {
+                case DELETE:
+                    String usId = input.prompt("Enter user id: ");
+                    userController.deleteUser(usId);
+                    break;
                 case LIST:
                     System.out.println(userController.readAll());
                     break;
                 case CREATE:
-                    User u = createUser();
-                    userController.saveUser(u);
+                    userController.createUser();
                     break;
                 case READ:
-                    String id = prompt("Идентификатор пользователя: ");
+                    String id = input.prompt("Идентификатор пользователя: ");
                     try {
                         User user = userController.readUser(Long.parseLong(id));
                         System.out.println(user);
@@ -39,22 +47,10 @@ public class UserView {
                     }
                     break;
                 case UPDATE:
-                    String userId = prompt("Enter user id: ");
-                    userController.updateUser(userId, createUser());
+                    String userId = input.prompt("Enter user id: ");
+                    userController.updateUser(userId, userController.createUser());
+                    break;
             }
         }
-    }
-
-    private String prompt(String message) {
-        Scanner in = new Scanner(System.in);
-        System.out.print(message);
-        return in.nextLine();
-    }
-
-    private User createUser() {
-        String firstName = prompt("Имя: ");
-        String lastName = prompt("Фамилия: ");
-        String phone = prompt("Номер телефона: ");
-        return new User(firstName, lastName, phone);
     }
 }
